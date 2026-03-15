@@ -1,4 +1,4 @@
-# Specification Quality Checklist: Meter Readings Management
+# Specification Quality Checklist: Utility Payments Management
 
 **Purpose**: Validate specification completeness and quality before proceeding to planning
 **Created**: 2026-03-15
