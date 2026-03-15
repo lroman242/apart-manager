@@ -118,7 +118,7 @@ Submit directly with invalid status → 400 response, status unchanged.
 - [x] T030 [P] Run `npm run lint` and fix all ESLint errors in `src/` to zero (Principle II)
 - [x] T031 [P] Verify PWA installability: `npm run build && npm run preview` → Chrome DevTools → Application → Manifest; confirm no errors and install prompt available
 - [x] T032 Deploy all 4 Edge Functions to Supabase: `supabase functions deploy apartments-create && supabase functions deploy apartments-update && supabase functions deploy apartments-delete && supabase functions deploy apartments-set-status`
-- [ ] T033 Validate end-to-end per `quickstart.md §7`: all 7 steps — including step 7 (submit empty name directly to `apartments-create` endpoint, confirm `400` response with no row created)
+- [x] T033 Validate end-to-end per `quickstart.md §7`: all 7 steps — including step 7 (submit empty name directly to `apartments-create` endpoint, confirm `400` response with no row created)
 
 ---
 

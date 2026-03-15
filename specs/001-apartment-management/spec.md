@@ -2,7 +2,7 @@
 
 **Feature Branch**: `001-apartment-management`
 **Created**: 2026-03-15
-**Status**: Draft
+**Status**: Complete
 **Input**: User description: "first create a functionality related to apartments management (CRUD + put on hold & unhold). Database schema: ID int, Name string, Address optional string, CreatedAt. Backend operations implemented as server-side functions."
 
 ## User Scenarios & Testing *(mandatory)*
