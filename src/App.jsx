@@ -4,6 +4,7 @@ import { supabase } from './lib/supabase'
 import LoginPage from './pages/LoginPage'
 import ApartmentsPage from './pages/ApartmentsPage'
 import TariffsPage from './pages/TariffsPage'
+import ReadingsPage from './pages/ReadingsPage'
 
 function AuthGuard({ session, children }) {
   if (session === undefined) {
@@ -47,6 +48,14 @@ export default function App() {
         element={
           <AuthGuard session={session}>
             <TariffsPage />
+          </AuthGuard>
+        }
+      />
+      <Route
+        path="/apartments/:id/readings"
+        element={
+          <AuthGuard session={session}>
+            <ReadingsPage />
           </AuthGuard>
         }
       />
