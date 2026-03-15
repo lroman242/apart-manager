@@ -25,7 +25,7 @@ Extend the utility payment form so resource tariff rows accept a current meter r
 |-----------|--------|-------|
 | I. Simplicity First | ✅ PASS | Extend existing table + existing Edge Function; no new infrastructure |
 | II. React + PWA Standards | ✅ PASS | Functional components, hooks; `npm run lint` enforced |
-| III. Data Integrity — Immutable History | ✅ PASS | Meter values stored as snapshots on line items; append-only |
+| III. Data Integrity — Immutable History | ⚠️ EXCEPTION | Edit limited to last payment only; all prior payments remain immutable |
 | IV. Supabase as Single Source of Truth | ✅ PASS | Schema change via migration; previous value read from DB |
 | V. Security via Supabase Auth | ✅ PASS | Existing Edge Function auth pattern unchanged; RLS unchanged |
 | VI. Ukrainian as UI Language | ✅ PASS | All new UI labels and errors in Ukrainian |
@@ -66,4 +66,10 @@ src/
         └── ReadingCard.jsx   # modified: show "previous → current" meter values on resource line items that have them
 ```
 
-**Structure Decision**: Purely additive — two new nullable columns, extend two existing files in `src/`, extend the existing Edge Function. No new components, hooks, pages, or Edge Functions.
+```text
+supabase/functions/readings-update/
+├── index.ts     # new: PATCH handler — update utility_payments + replace line items
+└── deno.json    # new: import map (same as readings-create)
+```
+
+**Structure Decision**: Additive — one nullable column, extend existing files, one new Edge Function (`readings-update`) for the edit flow.

@@ -10,7 +10,7 @@ description: "Task list for Resource Meter Reading Input feature"
 
 **Tests**: Not requested in spec — no test tasks included.
 
-**Organization**: This feature is purely additive — two nullable columns, extended Edge Function, extended form and card. Phase structure reflects the dependency chain: schema first, then backend, then UI.
+**Organization**: This feature is purely additive — one nullable column, extended Edge Function, extended form and card. Phase structure reflects the dependency chain: schema first, then backend, then UI.
 
 ## Format: `[ID] [P?] [Story] Description`
 
@@ -29,10 +29,10 @@ description: "Task list for Resource Meter Reading Input feature"
 
 **Purpose**: Extend the schema with the two new nullable columns — all story work depends on this.
 
-- [ ] T001 Create migration via `supabase migration new meter-reading-columns` — fill generated file with: `ALTER TABLE payment_line_items ADD COLUMN meter_value_previous numeric(10,3); ALTER TABLE payment_line_items ADD COLUMN meter_value_current numeric(10,3) CONSTRAINT payment_line_items_meter_current_check CHECK (meter_value_current >= 0);`
-- [ ] T002 Apply migration via `supabase db push`
+- [x] T001 Create migration via `supabase migration new meter-reading-columns` — fill generated file with: `ALTER TABLE payment_line_items ADD COLUMN meter_value_current numeric(10,3) CONSTRAINT payment_line_items_meter_current_check CHECK (meter_value_current >= 0);`
+- [x] T002 Apply migration via `supabase db push`
 
-**Checkpoint**: `payment_line_items` has two new nullable columns. Existing rows have NULL for both; existing queries are unaffected.
+**Checkpoint**: `payment_line_items` has one new nullable column. Existing rows have NULL; existing queries are unaffected.
 
 ---
 
@@ -42,9 +42,9 @@ description: "Task list for Resource Meter Reading Input feature"
 
 **⚠️ CRITICAL**: No user story work can be validated end-to-end until this phase is complete.
 
-- [ ] T003 Extend `supabase/functions/readings-create/index.ts` — in the line item insertion loop, read two new optional fields: `meter_value_previous` (number | null | undefined) and `meter_value_current` (number | null | undefined); add server-side validation: if `meter_value_previous` is provided and not null, it MUST be >= 0 (error: `"meter_value_previous must be >= 0"`); if `meter_value_current` is provided and not null, it MUST be >= 0 (error: `"meter_value_current must be >= 0"`); if both are provided and not null, `meter_value_current` MUST be >= `meter_value_previous` (error: `"meter_value_current must be >= meter_value_previous"`); pass `meter_value_previous` and `meter_value_current` into the `payment_line_items` insert alongside existing fields (use `null` when not provided); redeploy with `supabase functions deploy readings-create --no-verify-jwt`
+- [x] T003 Extend `supabase/functions/readings-create/index.ts` — in the line item insertion loop, read one new optional field: `meter_value_current` (number | null | undefined); add server-side validation: if `meter_value_current` is provided and not null, it MUST be >= 0 (error: `"meter_value_current must be >= 0"`); pass `meter_value_current` into the `payment_line_items` insert alongside existing fields (use `null` when not provided); redeploy with `supabase functions deploy readings-create --no-verify-jwt`
 
-**Checkpoint**: POST to `readings-create` with `meter_value_previous: 1450, meter_value_current: 1570` stores both values. POST with `meter_value_current: 1400, meter_value_previous: 1450` returns 400.
+**Checkpoint**: POST to `readings-create` with `meter_value_current: 1570` stores the value. POST with `meter_value_current: -1` returns 400.
 
 ---
 
@@ -52,13 +52,13 @@ description: "Task list for Resource Meter Reading Input feature"
 
 **Goal**: Owner enters a current meter value for each resource tariff in the payment form; quantity is auto-calculated as current − previous.
 
-**Independent Test**: Apartment has a previous payment with electricity meter ending at 1450 → open new payment form → "Попередній показник: 1450.000" label visible → enter 1570 in meter field → qty field instantly shows 120 → save → payment stored with qty=120, meter_value_previous=1450, meter_value_current=1570.
+**Independent Test**: Apartment has a previous payment with electricity meter ending at 1450 → open new payment form → "Попередній показник: 1450.000" label visible → enter 1570 in meter field → qty field instantly shows 120 → save → payment stored with qty=120, meter_value_current=1570.
 
 ### Implementation for User Story 1
 
-- [ ] T004 [P] [US1] Add `fetchPreviousMeterValues(apartmentId)` to `src/hooks/useReadings.js` — add a new exported async helper (not part of the hook state) that queries: `supabase.from('payment_line_items').select('tariff_name, meter_value_current, utility_payments!inner(apartment_id, period_start)').eq('utility_payments.apartment_id', apartmentId).not('meter_value_current', 'is', null).order('utility_payments.period_start', { ascending: false })`; deduplicate by `tariff_name` keeping only the first (most recent) row per name; return a plain object `{ [tariffName]: meterValueCurrent }` (e.g., `{ "Електроенергія": 1450 }`)
-- [ ] T005 [US1] Extend `src/pages/ReadingsPage.jsx` — call `fetchPreviousMeterValues(apartmentId)` before the form opens (in a `useEffect` or lazily on button click), store the result in state `previousMeterValues` (default `{}`); pass `previousMeterValues` as a new prop to `<ReadingForm>`
-- [ ] T006 [US1] Extend `src/components/readings/ReadingForm.jsx` — add `previousMeterValues` prop (default `{}`); for each resource tariff line item, add a meter reading row below the quantity/price inputs: label showing `previousMeterValues[item.tariff_name]` if it exists ("Попередній показник: X" or "Перший показник" if no previous); a numeric input "Показник лічильника" (`step="0.001"`, `min="0"`, `placeholder="0.000"`); store meter value per line in state `meterValues` (object keyed by index, default `{}`); when meter value changes for a resource line: if previous exists and current >= previous → auto-set `quantity` = `(current - previous).toFixed(3)` as a string and clear any qty error; if current < previous → set inline error `"Поточне значення не може бути меншим за попереднє"` on the meter field and clear quantity; if previous does not exist → leave quantity unchanged (owner fills manually); update the `handleSubmit` payload: include `meter_value_previous: previousMeterValues[item.tariff_name] ?? null` and `meter_value_current: meterValues[i] != null && meterValues[i] !== '' ? parseFloat(meterValues[i]) : null` per line item; meter field errors stored in `meterErrors` state (keyed by index)
+- [x] T004 [P] [US1] Add `fetchPreviousMeterValues(apartmentId)` to `src/hooks/useReadings.js` — add a new exported async helper (not part of the hook state) that queries: `supabase.from('payment_line_items').select('tariff_name, meter_value_current, utility_payments!inner(apartment_id, period_start)').eq('utility_payments.apartment_id', apartmentId).not('meter_value_current', 'is', null).order('utility_payments.period_start', { ascending: false })`; deduplicate by `tariff_name` keeping only the first (most recent) row per name; return a plain object `{ [tariffName]: meterValueCurrent }` (e.g., `{ "Електроенергія": 1450 }`)
+- [x] T005 [US1] Extend `src/pages/ReadingsPage.jsx` — call `fetchPreviousMeterValues(apartmentId)` before the form opens (in a `useEffect` or lazily on button click), store the result in state `previousMeterValues` (default `{}`); pass `previousMeterValues` as a new prop to `<ReadingForm>`
+- [x] T006 [US1] Extend `src/components/readings/ReadingForm.jsx` — add `previousMeterValues` prop (default `{}`); for each resource tariff line item, add a meter reading row below the quantity/price inputs: label showing `previousMeterValues[item.tariff_name]` if it exists ("Попередній показник: X" or "Перший показник" if no previous) — this is displayed to the user for reference only and is NOT sent in the payload; a numeric input "Показник лічильника" (`step="0.001"`, `min="0"`, `placeholder="0.000"`); store meter value per line in state `meterValues` (object keyed by index, default `{}`); when meter value changes for a resource line: if previous exists and current >= previous → auto-set `quantity` = `(current - previous).toFixed(3)` as a string and clear any qty error; if current < previous → set inline error `"Поточне значення не може бути меншим за попереднє"` on the meter field and clear quantity (this is a client-only concern — the previous value is not sent to the server); if previous does not exist → leave quantity unchanged (owner fills manually); update the `handleSubmit` payload: include only `meter_value_current: meterValues[i] != null && meterValues[i] !== '' ? parseFloat(meterValues[i]) : null` per line item — do NOT include `meter_value_previous` in the payload; meter field errors stored in `meterErrors` state (keyed by index)
 
 **Checkpoint**: US1 complete. Enter meter reading in form → qty auto-fills. Save → meter values stored in DB.
 
@@ -68,20 +68,35 @@ description: "Task list for Resource Meter Reading Input feature"
 
 **Goal**: Resource line items in the payments list show "previous → current" meter values when they were recorded.
 
-**Independent Test**: Payment with electricity meter_value_previous=1450, meter_value_current=1570 → open payments list → electricity line shows "1450.000 → 1570.000 кВт·год".
+**Independent Test**: Two payments exist — earlier payment with electricity meter_value_current=1450, later payment with electricity meter_value_current=1570 → open payments list → the later payment's electricity line shows "1450.000 → 1570.000 кВт·год" (previous value derived from the earlier payment).
 
 ### Implementation for User Story 2
 
-- [ ] T007 [US2] Extend `src/components/readings/ReadingCard.jsx` — in the resource line item render: after the existing name/qty/price display, check if `item.meter_value_current != null`; if so, render a secondary line showing `"{meter_value_previous} → {meter_value_current}"` formatted with `parseFloat(x).toFixed(3)` (or without trailing zeros using `Number(x)`); use a small, muted style (e.g., `text-xs text-gray-400`); if both previous and current exist: show `"1450 → 1570 {unit}"`; if only current exists (first payment with meter): show `"→ 1570 {unit}"`; service tariff lines and resource lines without meter values are unchanged
+- [x] T007 [US2] Extend `src/components/readings/ReadingCard.jsx` — in the resource line item render: after the existing name/qty/price display, check if `item.meter_value_current != null`; if so, render a secondary line showing `"{previousMeterValue} → {meter_value_current}"` formatted with `parseFloat(x).toFixed(3)` (or without trailing zeros using `Number(x)`); use a small, muted style (e.g., `text-xs text-gray-400`); to find the previous meter value for `payments[i]` tariff X: scan `payments[i+1..n]` (payments are sorted desc by `period_start`) for the first line item with matching `tariff_name` that has a non-null `meter_value_current` — that value is the previous reading; if a previous value is found: show `"1450 → 1570 {unit}"`; if no previous value exists (first payment with meter): show `"→ 1570 {unit}"`; service tariff lines and resource lines without meter values are unchanged
 
 **Checkpoint**: US1 + US2 complete. Full flow: enter meter reading → save → history shows meter values.
 
 ---
 
+## Phase 4b: User Story 3 — Edit Last Payment (Priority: P2)
+
+**Goal**: Owner can correct the most recent payment. Only the last card shows "Редагувати"; edit form opens pre-populated; save updates in-place via `readings-update`.
+
+- [x] T010 Create `supabase/functions/readings-update/index.ts` — PATCH handler: validate inputs (same rules as readings-create), update `utility_payments`, delete + reinsert `payment_line_items`; copy `deno.json` from readings-create; deploy with `--no-verify-jwt`
+- [x] T011 Add `updatePayment(paymentId, payload)` to `src/hooks/useReadings.js` — calls `readings-update` via `supabase.functions.invoke`
+- [x] T012 Extend `src/components/readings/ReadingForm.jsx` — add `mode='edit'` and `initialPayment` prop; pre-populate startDate, endDateInput, lineItems, meterValues from existing payment; both period dates editable in edit mode
+- [x] T013 Extend `src/pages/ReadingsPage.jsx` — add `editPayment` state, `openEditForm(payment)`, `handleUpdate(payload)`; pass `onEdit` to ReadingList
+- [x] T014 [P] Extend `src/components/readings/ReadingCard.jsx` — show "Редагувати" button only when `isLatest=true`
+- [x] T015 [P] Extend `src/components/readings/ReadingList.jsx` — pass `isLatest={i===0}` and `onEdit` to ReadingCard
+
+**Checkpoint**: US3 complete. Tap "Редагувати" on last card → form opens pre-populated → save → list updated.
+
+---
+
 ## Phase 5: Polish & Cross-Cutting Concerns
 
-- [ ] T008 [P] Run `npm run lint` in repo root and fix all ESLint errors in `src/` to zero (Principle II)
-- [ ] T009 Validate end-to-end per `quickstart.md`: all 7 scenarios — first payment no previous, auto-calc, validation error, manual qty no regression, history display, service unaffected, lint
+- [x] T008 [P] Run `npm run lint` in repo root and fix all ESLint errors in `src/` to zero (Principle II)
+- [x] T009 Validate end-to-end per `quickstart.md`: all 7 scenarios — first payment no previous, auto-calc, validation error, manual qty no regression, history display, service unaffected, lint
 
 ---
 
@@ -144,7 +159,8 @@ description: "Task list for Resource Meter Reading Input feature"
 
 - `[P]` tasks = different files, safe to run in parallel
 - This feature is purely additive — all changes are backwards-compatible; no existing behaviour changes
-- `previousMeterValues` map is built client-side from existing `payment_line_items` data; no new DB tables or columns beyond the two nullable fields
+- `previousMeterValues` map is built client-side from existing `payment_line_items` data; no new DB tables or columns beyond the one nullable field (`meter_value_current`)
 - The `DISTINCT ON` pattern is emulated JS-side (filter to first occurrence per tariff name after sorting DESC by period)
-- When `meter_value_current` is provided but `meter_value_previous` is null (first reading), the quantity is not auto-calculated — owner fills manually; meter value is still saved as future baseline
+- When `meter_value_current` is provided but no previous reading exists for the tariff (first reading), the quantity is not auto-calculated — owner fills manually; `meter_value_current` is still stored as the baseline for future readings
+- Only `meter_value_current` is stored in the DB and sent in the Edge Function payload; the previous value is always derived at query time (ReadingCard) or from the pre-loaded `previousMeterValues` map (ReadingForm) — it is never stored or transmitted as a separate field
 - Supabase JS client query uses `.not('meter_value_current', 'is', null)` to filter only rows that have meter values

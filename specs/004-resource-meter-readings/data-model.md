@@ -6,11 +6,10 @@
 
 ## Modified Entity: `payment_line_items`
 
-Two new nullable columns are added to the existing table. All existing columns are unchanged.
+One new nullable column is added to the existing table. All existing columns are unchanged.
 
 | Column | Type | Constraints | Notes |
 |--------|------|-------------|-------|
-| `meter_value_previous` | `numeric(10,3)` | nullable | Snapshot of the previous period's `meter_value_current` for this tariff, copied at form-open time. Null if no prior reading exists or if meter reading was not used. |
 | `meter_value_current` | `numeric(10,3)` | nullable, CHECK >= 0 | Meter reading entered by owner for this payment period. Null if owner did not use meter reading input. |
 
 **No other table changes.**
@@ -21,8 +20,7 @@ Two new nullable columns are added to the existing table. All existing columns a
 
 ```sql
 ALTER TABLE payment_line_items
-  ADD COLUMN meter_value_previous numeric(10,3),
-  ADD COLUMN meter_value_current  numeric(10,3) CHECK (meter_value_current >= 0);
+  ADD COLUMN meter_value_current numeric(10,3) CHECK (meter_value_current >= 0);
 ```
 
 ---
@@ -52,12 +50,11 @@ Returns a map `{ tariffName → previousMeterValue }` used to pre-populate the f
 | Rule | Enforced by |
 |------|-------------|
 | `meter_value_current >= 0` | DB constraint + client validation |
-| `meter_value_current > meter_value_previous` when both present | Client validation (inline error: "Поточне значення не може бути меншим за попереднє") |
+| `meter_value_current > previous` when previous exists | Client validation (inline error: "Поточне значення не може бути меншим за попереднє"); previous is derived at query time from the prior payment's `meter_value_current` |
 | `quantity > 0` (unchanged) | Edge Function + client validation |
-| `meter_value_previous` must match the previous period's `meter_value_current` | Client-side lookup (no DB constraint needed) |
 
 ---
 
 ## No New Tables or Relationships
 
-This feature is purely additive: two nullable columns on an existing table, one migration, no FK changes, no new RLS policies needed.
+This feature is purely additive: one nullable column on an existing table, one migration, no FK changes, no new RLS policies needed.

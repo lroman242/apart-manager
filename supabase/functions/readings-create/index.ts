@@ -1,4 +1,3 @@
-import { serve } from "@supabase/functions-js"
 import { createClient } from "@supabase/supabase-js"
 
 const corsHeaders = {
@@ -6,7 +5,8 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 }
 
-serve(async (req: Request) => {
+Deno.serve(async (req: Request) => {
+  try {
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders })
   }
@@ -87,8 +87,8 @@ serve(async (req: Request) => {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       })
     }
-    if (typeof item.quantity !== "number" || item.quantity <= 0) {
-      return new Response(JSON.stringify({ error: "quantity must be greater than 0" }), {
+    if (typeof item.quantity !== "number" || item.quantity < 0) {
+      return new Response(JSON.stringify({ error: "quantity must be >= 0" }), {
         status: 400,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       })
@@ -105,6 +105,14 @@ serve(async (req: Request) => {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       })
     }
+    if (item.meter_value_current !== undefined && item.meter_value_current !== null) {
+      if (typeof item.meter_value_current !== "number" || item.meter_value_current < 0) {
+        return new Response(JSON.stringify({ error: "meter_value_current must be >= 0" }), {
+          status: 400,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        })
+      }
+    }
   }
 
   const { data: existing } = await supabase
@@ -112,6 +120,7 @@ serve(async (req: Request) => {
     .select("id")
     .eq("apartment_id", apartment_id)
     .eq("period_start", period_start)
+    .eq("period_end", period_end)
     .maybeSingle()
 
   if (existing) {
@@ -128,7 +137,7 @@ serve(async (req: Request) => {
     .single()
 
   if (insertError || !payment) {
-    return new Response(JSON.stringify({ error: "internal server error" }), {
+    return new Response(JSON.stringify({ error: insertError?.message ?? "internal server error" }), {
       status: 500,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     })
@@ -144,6 +153,9 @@ serve(async (req: Request) => {
       quantity: Number(item.quantity),
       unit_price: Number(item.unit_price),
       subtotal: Math.round(Number(item.quantity) * Number(item.unit_price) * 100) / 100,
+      meter_value_current: (typeof item.meter_value_current === "number" && item.meter_value_current >= 0)
+        ? item.meter_value_current
+        : null,
     }))
 
     const { data: insertedItems, error: lineError } = await supabase
@@ -152,7 +164,7 @@ serve(async (req: Request) => {
       .select()
 
     if (lineError) {
-      return new Response(JSON.stringify({ error: "internal server error" }), {
+      return new Response(JSON.stringify({ error: lineError.message }), {
         status: 500,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       })
@@ -164,4 +176,10 @@ serve(async (req: Request) => {
     status: 201,
     headers: { ...corsHeaders, "Content-Type": "application/json" },
   })
+  } catch (err) {
+    return new Response(JSON.stringify({ error: String(err) }), {
+      status: 500,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    })
+  }
 })

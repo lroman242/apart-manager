@@ -48,6 +48,25 @@ Each resource line item in the payment history shows the meter reading values (p
 - What if a new resource tariff is added after several payments exist? The first payment using that tariff has no previous meter value, so quantity is entered manually. The meter value from that payment becomes the baseline going forward.
 - What if meter reading values are non-integer (e.g., gas meters with decimal readings)? Decimal meter values must be supported.
 
+---
+
+### User Story 3 — Edit Last Payment (Priority: P2)
+
+The owner can correct the most recent utility payment — updating period dates, quantities, prices, and meter readings. Only the last payment is editable; older payments remain immutable.
+
+**Why this priority**: Mistakes happen during data entry; the owner needs a way to correct the last record without deleting and re-creating it.
+
+**Independent Test**: Last payment has electricity qty=100, price=4.50 → tap "Редагувати" → change qty to 105 → save → payment list shows updated subtotal; older payments unchanged.
+
+**Acceptance Scenarios**:
+
+1. **Given** there is at least one payment, **When** the owner views the payment list, **Then** the most recent payment shows a "Редагувати" button; all other payments do not.
+2. **Given** the owner taps "Редагувати", **When** the edit form opens, **Then** all existing values (dates, quantities, prices, meter readings) are pre-populated.
+3. **Given** the owner changes values and saves, **When** the save completes, **Then** the payment list reflects the updated values.
+4. **Given** the owner cancels the edit, **When** the form closes, **Then** the original payment is unchanged.
+
+---
+
 ## Requirements *(mandatory)*
 
 ### Functional Requirements
@@ -62,6 +81,9 @@ Each resource line item in the payment history shows the meter reading values (p
 - **FR-008**: Each resource line item in the payment history list MUST display the previous and current meter reading values when they were recorded with that payment.
 - **FR-009**: Meter reading values MUST support decimal numbers (e.g., 1234.567 for gas meters).
 - **FR-010**: The previous meter value shown in the form MUST be the current meter value from the most recent payment for the same apartment and tariff name.
+- **FR-011**: A "Редагувати" button MUST appear only on the most recent payment card in the payment list.
+- **FR-012**: Opening the edit form MUST pre-populate all fields from the existing payment.
+- **FR-013**: Saving an edit MUST update the existing payment record and its line items in-place.
 
 ### Key Entities
 
@@ -84,4 +106,4 @@ Each resource line item in the payment history shows the meter reading values (p
 - Meter reading input is optional — owners may still enter quantity directly without using the meter reading field.
 - Meter values are stored per line item (not in a separate meter history table) to maintain the append-only, snapshot approach of the existing system.
 - Decimal precision: meter values stored to 3 decimal places (same as quantity).
-- The feature applies only to the "add payment" flow; editing past payments remains out of scope.
+- Only the most recent payment may be edited; older payments remain immutable.

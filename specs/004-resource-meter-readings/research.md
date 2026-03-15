@@ -6,7 +6,7 @@
 
 ## Decision 1: Store Meter Values on Line Items (Not a Separate Table)
 
-**Decision**: Add `meter_value_previous numeric(10,3)` and `meter_value_current numeric(10,3)` as nullable columns to the existing `payment_line_items` table.
+**Decision**: Add `meter_value_current numeric(10,3)` as a single nullable column to the existing `payment_line_items` table. The previous meter value is always derived at query time from the prior payment's `meter_value_current` — it is not stored as a separate column.
 
 **Rationale**: The existing system already stores tariff snapshots (name, price, unit) as immutable line item data. Meter readings are simply another snapshot field on the same row. Adding a separate `meter_readings` table would create a parallel history with its own FK relationships — unnecessary complexity for what is fundamentally "two more optional fields per line item." Nullable columns mean zero impact on existing payments that don't use meter readings.
 
@@ -42,7 +42,7 @@ ORDER BY pli.tariff_name, up.period_start DESC
 
 ## Decision 3: Extend `readings-create` Edge Function (Not a New Function)
 
-**Decision**: The existing `readings-create` Edge Function is extended to accept two new optional fields per line item: `meter_value_previous` and `meter_value_current`. Both are passed through and inserted into `payment_line_items` unchanged. No server-side calculation — quantity is still validated as `> 0` (already calculated client-side).
+**Decision**: The existing `readings-create` Edge Function is extended to accept one new optional field per line item: `meter_value_current`. It is passed through and inserted into `payment_line_items` unchanged. The previous meter value is not sent by the client and is not stored — it is derived at query time from the prior payment's `meter_value_current`. No server-side calculation — quantity is still validated as `> 0` (already calculated client-side).
 
 **Rationale**: The Edge Function already handles all line item insertion logic. Adding two nullable pass-through fields is a minimal change. Re-creating the calculation server-side would duplicate client logic (Principle I).
 
