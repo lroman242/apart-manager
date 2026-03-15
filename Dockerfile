@@ -1,5 +1,5 @@
 # ── Development stage ────────────────────────────────────────────────────────
-FROM node:20-alpine AS dev
+FROM node:24.14-alpine AS dev
 
 WORKDIR /app
 
@@ -14,7 +14,7 @@ EXPOSE 5173
 CMD ["npm", "run", "dev", "--", "--host", "0.0.0.0"]
 
 # ── Build stage ───────────────────────────────────────────────────────────────
-FROM node:20-alpine AS build
+FROM node:24.14-alpine AS build
 
 WORKDIR /app
 

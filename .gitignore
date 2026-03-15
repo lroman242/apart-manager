@@ -22,6 +22,9 @@ supabase/.temp
 .vscode/
 .idea/
 
+# Claude Code — session data and memory (commands are kept)
+.claude/projects/
+
 # OS
 .DS_Store
 Thumbs.db
