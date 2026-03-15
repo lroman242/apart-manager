@@ -3,6 +3,7 @@ import { Routes, Route, Navigate } from 'react-router-dom'
 import { supabase } from './lib/supabase'
 import LoginPage from './pages/LoginPage'
 import ApartmentsPage from './pages/ApartmentsPage'
+import TariffsPage from './pages/TariffsPage'
 
 function AuthGuard({ session, children }) {
   if (session === undefined) {
@@ -38,6 +39,14 @@ export default function App() {
         element={
           <AuthGuard session={session}>
             <ApartmentsPage />
+          </AuthGuard>
+        }
+      />
+      <Route
+        path="/apartments/:id/tariffs"
+        element={
+          <AuthGuard session={session}>
+            <TariffsPage />
           </AuthGuard>
         }
       />

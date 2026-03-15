@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { useApartments } from '../hooks/useApartments'
 import ApartmentList from '../components/apartments/ApartmentList'
@@ -7,6 +8,7 @@ import DeleteConfirmDialog from '../components/apartments/DeleteConfirmDialog'
 
 // Form mode: null | 'create' | { ...apartment } (editing)
 export default function ApartmentsPage() {
+  const navigate = useNavigate()
   const { apartments, loading, error, createApartment, updateApartment, deleteApartment, setHold, removeHold } =
     useApartments()
 
@@ -96,6 +98,7 @@ export default function ApartmentsPage() {
             onEdit={(apt) => setFormMode(apt)}
             onDelete={(apt) => setDeleteTarget(apt)}
             onToggleHold={handleToggleHold}
+            onTariffs={(apt) => navigate(`/apartments/${apt.id}/tariffs`)}
           />
         )}
       </main>
