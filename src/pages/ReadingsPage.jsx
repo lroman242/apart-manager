@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
-import { useReadings } from '../hooks/useReadings'
+import { useReadings, fetchPreviousMeterValues } from '../hooks/useReadings'
 import ReadingForm from '../components/readings/ReadingForm'
 import ReadingList from '../components/readings/ReadingList'
 
@@ -12,10 +12,12 @@ export default function ReadingsPage() {
   const [apartmentName, setApartmentName] = useState('')
   const [apartmentLoading, setApartmentLoading] = useState(true)
   const [tariffs, setTariffs] = useState([])
-  const [formMode, setFormMode] = useState(null) // null | 'initial' | 'monthly'
+  const [formMode, setFormMode] = useState(null) // null | 'initial' | 'monthly' | 'edit'
+  const [editPayment, setEditPayment] = useState(null)
+  const [previousMeterValues, setPreviousMeterValues] = useState({})
   const [actionError, setActionError] = useState(null)
 
-  const { payments, loading, error, createPayment } = useReadings(apartmentId)
+  const { payments, loading, error, createPayment, updatePayment } = useReadings(apartmentId)
 
   useEffect(() => {
     supabase
@@ -38,13 +40,32 @@ export default function ReadingsPage() {
       })
   }, [apartmentId])
 
+  async function openForm(mode) {
+    const values = await fetchPreviousMeterValues(apartmentId)
+    setPreviousMeterValues(values)
+    setFormMode(mode)
+  }
+
+  async function openEditForm(payment) {
+    // Previous meter values for edit = meter values from the payment before this one
+    const prevPayment = payments[payments.indexOf(payment) + 1]
+    const prevValues = {}
+    for (const item of prevPayment?.payment_line_items ?? []) {
+      if (item.meter_value_current != null) {
+        prevValues[item.tariff_name] = item.meter_value_current
+      }
+    }
+    setPreviousMeterValues(prevValues)
+    setEditPayment(payment)
+    setFormMode('edit')
+  }
+
   function getNextPeriod(lastPeriodEnd) {
     const [y, m, d] = lastPeriodEnd.split('-').map(Number)
-    const nextStart = new Date(y, m - 1, d + 1)
-    const nextEnd = new Date(nextStart.getFullYear(), nextStart.getMonth() + 1, 0)
+    const nextEnd = new Date(y, m, d)
     const fmt = (dt) =>
       `${dt.getFullYear()}-${String(dt.getMonth() + 1).padStart(2, '0')}-${String(dt.getDate()).padStart(2, '0')}`
-    return { periodStart: fmt(nextStart), periodEnd: fmt(nextEnd) }
+    return { periodStart: lastPeriodEnd, periodEnd: fmt(nextEnd) }
   }
 
   async function handleCreate(payload) {
@@ -57,10 +78,28 @@ export default function ReadingsPage() {
     }
   }
 
+  async function handleUpdate(payload) {
+    setActionError(null)
+    try {
+      await updatePayment(editPayment.id, payload)
+      setFormMode(null)
+      setEditPayment(null)
+    } catch (err) {
+      setActionError(err.message)
+    }
+  }
+
   function handleCancel() {
     setFormMode(null)
+    setEditPayment(null)
     setActionError(null)
   }
+
+  const formTitle = formMode === 'initial'
+    ? 'Перший запис показників'
+    : formMode === 'edit'
+      ? 'Редагувати показники'
+      : 'Додати показники'
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -86,15 +125,15 @@ export default function ReadingsPage() {
 
         {formMode ? (
           <div className="bg-white rounded-xl shadow p-6">
-            <h2 className="text-base font-semibold text-gray-800 mb-4">
-              {formMode === 'initial' ? 'Перший запис показників' : 'Додати показники'}
-            </h2>
+            <h2 className="text-base font-semibold text-gray-800 mb-4">{formTitle}</h2>
             <ReadingForm
               mode={formMode}
               periodStart={formMode === 'monthly' ? getNextPeriod(payments[0]?.period_end).periodStart : undefined}
               periodEnd={formMode === 'monthly' ? getNextPeriod(payments[0]?.period_end).periodEnd : undefined}
               tariffs={tariffs}
-              onSubmit={handleCreate}
+              previousMeterValues={previousMeterValues}
+              initialPayment={formMode === 'edit' ? editPayment : null}
+              onSubmit={formMode === 'edit' ? handleUpdate : handleCreate}
               onCancel={handleCancel}
             />
           </div>
@@ -105,8 +144,9 @@ export default function ReadingsPage() {
         ) : (
           <ReadingList
             payments={payments}
-            onAdd={() => setFormMode('monthly')}
-            onAddFirst={() => setFormMode('initial')}
+            onAdd={() => openForm('monthly')}
+            onAddFirst={() => openForm('initial')}
+            onEdit={openEditForm}
           />
         )}
       </main>

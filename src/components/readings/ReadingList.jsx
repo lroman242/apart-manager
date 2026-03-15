@@ -1,6 +1,6 @@
 import ReadingCard from './ReadingCard'
 
-export default function ReadingList({ payments, onAdd, onAddFirst }) {
+export default function ReadingList({ payments, onAdd, onAddFirst, onEdit }) {
   if (payments.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-16 text-center gap-3">
@@ -27,8 +27,8 @@ export default function ReadingList({ payments, onAdd, onAddFirst }) {
         </button>
       </div>
       <div className="flex flex-col gap-3">
-        {payments.map((p) => (
-          <ReadingCard key={p.id} payment={p} />
+        {payments.map((p, i) => (
+          <ReadingCard key={p.id} payment={p} paymentIndex={i} allPayments={payments} isLatest={i === 0} onEdit={onEdit} />
         ))}
       </div>
     </div>
