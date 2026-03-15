@@ -11,8 +11,17 @@ jobs:
   deploy:
     runs-on: self-hosted
     steps:
-      - uses: actions/checkout@v4
+#      - name: Setup Node via nvm
+#        run: |
+#          export NVM_DIR="$HOME/.nvm"
+#          [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+#          nvm use 24.14.0
+#          echo "$(npm bin)" >> $GITHUB_PATH
 
+      - uses: actions/checkout@v4
+#        with:
+#          node-version: '24'
+#
       - name: Install dependencies
         run: npm ci
 
