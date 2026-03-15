@@ -99,6 +99,7 @@ export default function ApartmentsPage() {
             onDelete={(apt) => setDeleteTarget(apt)}
             onToggleHold={handleToggleHold}
             onTariffs={(apt) => navigate(`/apartments/${apt.id}/tariffs`)}
+            onReadings={(apt) => navigate(`/apartments/${apt.id}/readings`)}
           />
         )}
       </main>

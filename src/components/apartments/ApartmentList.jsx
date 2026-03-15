@@ -1,6 +1,6 @@
 import ApartmentCard from './ApartmentCard'
 
-export default function ApartmentList({ apartments, onAdd, onEdit, onDelete, onToggleHold, onTariffs }) {
+export default function ApartmentList({ apartments, onAdd, onEdit, onDelete, onToggleHold, onTariffs, onReadings }) {
   return (
     <div className="flex flex-col gap-4">
       <div className="flex items-center justify-between">
@@ -40,6 +40,7 @@ export default function ApartmentList({ apartments, onAdd, onEdit, onDelete, onT
               onDelete={onDelete}
               onToggleHold={onToggleHold}
               onTariffs={onTariffs}
+              onReadings={onReadings}
             />
           ))}
         </div>

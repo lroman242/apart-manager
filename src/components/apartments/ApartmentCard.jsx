@@ -1,4 +1,4 @@
-export default function ApartmentCard({ apartment, onEdit, onDelete, onToggleHold, onTariffs }) {
+export default function ApartmentCard({ apartment, onEdit, onDelete, onToggleHold, onTariffs, onReadings }) {
   const isOnHold = apartment.status === 'on_hold'
 
   const createdAt = new Date(apartment.created_at).toLocaleDateString('uk-UA', {
@@ -19,11 +19,19 @@ export default function ApartmentCard({ apartment, onEdit, onDelete, onToggleHol
         </div>
 
 
-        {isOnHold && (
-          <span className="shrink-0 inline-block bg-yellow-100 text-yellow-700 text-xs font-medium px-2 py-0.5 rounded-full">
-            Призупинено
-          </span>
-        )}
+        <div className="flex items-center gap-2 shrink-0">
+          <button
+            onClick={() => onReadings(apartment)}
+            className="text-sm px-3 py-1 rounded-lg border border-green-200 text-green-600 hover:bg-green-50 transition-colors"
+          >
+            Показники
+          </button>
+          {isOnHold && (
+            <span className="inline-block bg-yellow-100 text-yellow-700 text-xs font-medium px-2 py-0.5 rounded-full">
+              Призупинено
+            </span>
+          )}
+        </div>
       </div>
 
       <div className="flex flex-wrap gap-2 pt-1 border-t border-gray-100">
