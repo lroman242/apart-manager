@@ -2,7 +2,7 @@
 
 **Feature Branch**: `002-tariffs-management`
 **Created**: 2026-03-15
-**Status**: Draft
+**Status**: Complete
 **Input**: User description: "add Tarifs management page per appartment, where I can add new 'services' & 'resources' with price. I could be fixed price per service or price per used volume of resources."
 
 ## User Scenarios & Testing *(mandatory)*
