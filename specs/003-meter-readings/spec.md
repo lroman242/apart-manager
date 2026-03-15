@@ -2,7 +2,7 @@
 
 **Feature Branch**: `003-meter-readings`
 **Created**: 2026-03-15
-**Status**: Draft
+**Status**: Complete
 **Input**: User description: "add utility payments management feature to each appartment. Add button to the top right corner of appartment card. If an appartment has no utility payments data add ability to add initial utility payments. utility payments should be added once a month. on the initial readings need to add start date. the next reading will be start date + 1 month from the previous. It should be a date range. Need to specify qty for each tariff - need to enter value of consumed resources for each resource and qty = 1 by default for each service, but could be changed. There should be ability to change price as well. On the appartment page should be listed all added utility payments (months) in desc order."
 
 ## User Scenarios & Testing *(mandatory)*
