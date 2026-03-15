@@ -1,4 +1,4 @@
-export default function ApartmentCard({ apartment, onEdit, onDelete, onToggleHold }) {
+export default function ApartmentCard({ apartment, onEdit, onDelete, onToggleHold, onTariffs }) {
   const isOnHold = apartment.status === 'on_hold'
 
   const createdAt = new Date(apartment.created_at).toLocaleDateString('uk-UA', {
@@ -29,21 +29,28 @@ export default function ApartmentCard({ apartment, onEdit, onDelete, onToggleHol
       <div className="flex flex-wrap gap-2 pt-1 border-t border-gray-100">
         <button
           onClick={() => onEdit(apartment)}
-          className="text-sm text-indigo-600 hover:underline"
+          className="text-sm px-3 py-1 rounded-lg border border-indigo-200 text-indigo-600 hover:bg-indigo-50 transition-colors"
         >
           Редагувати
         </button>
 
         <button
+          onClick={() => onTariffs(apartment)}
+          className="text-sm px-3 py-1 rounded-lg border border-indigo-200 text-indigo-600 hover:bg-indigo-50 transition-colors"
+        >
+          Тарифи
+        </button>
+
+        <button
           onClick={() => onToggleHold(apartment)}
-          className="text-sm text-gray-600 hover:underline"
+          className="text-sm px-3 py-1 rounded-lg border border-gray-200 text-gray-600 hover:bg-gray-50 transition-colors"
         >
           {isOnHold ? 'Зняти призупинення' : 'Призупинити'}
         </button>
 
         <button
           onClick={() => onDelete(apartment)}
-          className="text-sm text-red-500 hover:underline ml-auto"
+          className="text-sm px-3 py-1 rounded-lg border border-red-200 text-red-500 hover:bg-red-50 transition-colors ml-auto"
         >
           Видалити
         </button>
