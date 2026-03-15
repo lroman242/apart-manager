@@ -389,7 +389,7 @@ s3_secret_key = "env(S3_SECRET_KEY)"
 
 [functions.apartments-create]
 enabled = true
-verify_jwt = true
+verify_jwt = false
 import_map = "./functions/apartments-create/deno.json"
 # Uncomment to specify a custom file path to the entrypoint.
 # Supported file extensions are: .ts, .js, .mjs, .jsx, .tsx
@@ -400,7 +400,7 @@ entrypoint = "./functions/apartments-create/index.ts"
 
 [functions.apartments-update]
 enabled = true
-verify_jwt = true
+verify_jwt = false
 import_map = "./functions/apartments-update/deno.json"
 # Uncomment to specify a custom file path to the entrypoint.
 # Supported file extensions are: .ts, .js, .mjs, .jsx, .tsx
@@ -411,7 +411,7 @@ entrypoint = "./functions/apartments-update/index.ts"
 
 [functions.apartments-delete]
 enabled = true
-verify_jwt = true
+verify_jwt = false
 import_map = "./functions/apartments-delete/deno.json"
 # Uncomment to specify a custom file path to the entrypoint.
 # Supported file extensions are: .ts, .js, .mjs, .jsx, .tsx
@@ -422,7 +422,7 @@ entrypoint = "./functions/apartments-delete/index.ts"
 
 [functions.apartments-set-status]
 enabled = true
-verify_jwt = true
+verify_jwt = false
 import_map = "./functions/apartments-set-status/deno.json"
 # Uncomment to specify a custom file path to the entrypoint.
 # Supported file extensions are: .ts, .js, .mjs, .jsx, .tsx
@@ -433,7 +433,7 @@ entrypoint = "./functions/apartments-set-status/index.ts"
 
 [functions.tariffs-create]
 enabled = true
-verify_jwt = true
+verify_jwt = false
 import_map = "./functions/tariffs-create/deno.json"
 # Uncomment to specify a custom file path to the entrypoint.
 # Supported file extensions are: .ts, .js, .mjs, .jsx, .tsx
@@ -444,7 +444,7 @@ entrypoint = "./functions/tariffs-create/index.ts"
 
 [functions.tariffs-update]
 enabled = true
-verify_jwt = true
+verify_jwt = false
 import_map = "./functions/tariffs-update/deno.json"
 # Uncomment to specify a custom file path to the entrypoint.
 # Supported file extensions are: .ts, .js, .mjs, .jsx, .tsx
@@ -455,7 +455,7 @@ entrypoint = "./functions/tariffs-update/index.ts"
 
 [functions.tariffs-delete]
 enabled = true
-verify_jwt = true
+verify_jwt = false
 import_map = "./functions/tariffs-delete/deno.json"
 # Uncomment to specify a custom file path to the entrypoint.
 # Supported file extensions are: .ts, .js, .mjs, .jsx, .tsx
@@ -466,7 +466,7 @@ entrypoint = "./functions/tariffs-delete/index.ts"
 
 [functions.readings-create]
 enabled = true
-verify_jwt = true
+verify_jwt = false
 import_map = "./functions/readings-create/deno.json"
 # Uncomment to specify a custom file path to the entrypoint.
 # Supported file extensions are: .ts, .js, .mjs, .jsx, .tsx
@@ -474,3 +474,14 @@ entrypoint = "./functions/readings-create/index.ts"
 # Specifies static files to be bundled with the function. Supports glob patterns.
 # For example, if you want to serve static HTML pages in your function:
 # static_files = [ "./functions/readings-create/*.html" ]
+
+[functions.readings-update]
+enabled = true
+verify_jwt = false
+import_map = "./functions/readings-update/deno.json"
+# Uncomment to specify a custom file path to the entrypoint.
+# Supported file extensions are: .ts, .js, .mjs, .jsx, .tsx
+entrypoint = "./functions/readings-update/index.ts"
+# Specifies static files to be bundled with the function. Supports glob patterns.
+# For example, if you want to serve static HTML pages in your function:
+# static_files = [ "./functions/readings-update/*.html" ]

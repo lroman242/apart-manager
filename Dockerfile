@@ -23,6 +23,9 @@ RUN npm ci
 
 COPY . .
 
+ARG VITE_SUPABASE_URL
+ARG VITE_SUPABASE_ANON_KEY
+
 RUN npm run build
 
 # ── Production stage (serve built assets) ────────────────────────────────────

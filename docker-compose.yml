@@ -11,3 +11,22 @@ services:
     env_file:
       - .env.local
     restart: unless-stopped
+
+#  preview:
+#    build:
+#      context: .
+#      target: build     # stops after npm run build
+#    ports:
+#      - "4173:4173"
+#    command: npm run preview -- --host 0.0.0.0
+
+  prod:
+    build:
+      context: .
+      target: prod
+      args:
+        VITE_SUPABASE_URL: ${VITE_SUPABASE_URL}
+        VITE_SUPABASE_ANON_KEY: ${VITE_SUPABASE_ANON_KEY}
+    ports:
+      - "80:80"
+    restart: unless-stopped
